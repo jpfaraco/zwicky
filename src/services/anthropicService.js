@@ -6,26 +6,35 @@ export async function generateAttributes(challenge) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
+      max_tokens: 1500,
       messages: [{
         role: 'user',
         content: `You are an expert at morphological analysis and creative problem-solving.
 Given a challenge, generate 3 to 5 relevant attributes (dimensions) that should be considered when creating solutions.
+
+For each attribute, also generate a guiding question that helps people think of items for that attribute.
 
 Requirements:
 - Attributes should be distinct and non-overlapping
 - Attributes should be broad enough to allow multiple items
 - Attributes should be directly relevant to solving the challenge
 - Attribute names should be concise (1-3 words)
+- Questions should help clarify what types of items fit in each attribute
+- Questions should be concise (one sentence, maximum 150 characters)
 - Respond in the same language as the challenge
-- Return ONLY a JSON array of attribute names
+- Return ONLY a JSON array of objects with "name" and "question" fields
 
-Example for "How might we create a new fitness app?":
-["Target Audience", "Core Feature", "Monetization", "Platform", "Engagement Method"]
+Example for "How might we increase customer engagement?":
+[
+  {"name": "Target Audience", "question": "For which specific customer segment are we designing this solution?"},
+  {"name": "Core Feature", "question": "Which product, tool, or functionality will serve as the basis for engagement?"},
+  {"name": "Communication Channel", "question": "Through which channel will we communicate or deliver this solution?"},
+  {"name": "Incentive", "question": "What rewards or benefits will motivate customers to engage?"}
+]
 
 Challenge: ${challenge}
 
-Generate the attributes as a JSON array:`
+Generate the attributes with questions as a JSON array:`
       }]
     })
   })
@@ -36,11 +45,12 @@ Generate the attributes as a JSON array:`
 
   const data = await response.json()
   const attributesText = data.content[0].text
-  const attributeNames = JSON.parse(attributesText)
+  const attributesData = JSON.parse(attributesText)
 
-  return attributeNames.map((name, index) => ({
+  return attributesData.map((attr, index) => ({
     id: Date.now() + index,
-    name,
+    name: attr.name,
+    question: attr.question,
     items: []
   }))
 }

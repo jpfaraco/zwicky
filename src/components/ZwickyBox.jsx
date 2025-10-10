@@ -6,12 +6,14 @@ import { Plus, X } from 'lucide-react'
 
 export function ZwickyBox({ attributes, setAttributes }) {
   const [editingAttribute, setEditingAttribute] = useState(null)
+  const [editingQuestion, setEditingQuestion] = useState(null)
   const [editingItem, setEditingItem] = useState(null)
 
   const addAttribute = () => {
     const newAttribute = {
       id: Date.now(),
       name: 'New Attribute',
+      question: '',
       items: []
     }
     setAttributes([...attributes, newAttribute])
@@ -25,6 +27,12 @@ export function ZwickyBox({ attributes, setAttributes }) {
   const updateAttributeName = (id, newName) => {
     setAttributes(attributes.map(attr =>
       attr.id === id ? { ...attr, name: newName } : attr
+    ))
+  }
+
+  const updateAttributeQuestion = (id, newQuestion) => {
+    setAttributes(attributes.map(attr =>
+      attr.id === id ? { ...attr, question: newQuestion } : attr
     ))
   }
 
@@ -105,34 +113,56 @@ export function ZwickyBox({ attributes, setAttributes }) {
             className={`flex-shrink-0 w-72 px-3 py-4 ${index !== attributes.length - 1 ? 'border-r' : ''}`}
           >
             <div className="space-y-3">
-              <div className="flex items-start justify-between gap-2 group">
-                {editingAttribute === attribute.id ? (
+              <div className="space-y-2">
+                <div className="flex items-start justify-between gap-2 group">
+                  {editingAttribute === attribute.id ? (
+                    <Input
+                      autoFocus
+                      value={attribute.name}
+                      onChange={(e) => updateAttributeName(attribute.id, e.target.value)}
+                      onBlur={() => setEditingAttribute(null)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') setEditingAttribute(null)
+                      }}
+                      className="h-8"
+                    />
+                  ) : (
+                    <h3
+                      className="font-semibold cursor-pointer hover:text-primary flex-1 text-md"
+                      onClick={() => setEditingAttribute(attribute.id)}
+                    >
+                      {attribute.name}
+                    </h3>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 -mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => deleteAttribute(attribute.id)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+                {editingQuestion === attribute.id ? (
                   <Input
                     autoFocus
-                    value={attribute.name}
-                    onChange={(e) => updateAttributeName(attribute.id, e.target.value)}
-                    onBlur={() => setEditingAttribute(null)}
+                    value={attribute.question || ''}
+                    onChange={(e) => updateAttributeQuestion(attribute.id, e.target.value)}
+                    onBlur={() => setEditingQuestion(null)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') setEditingAttribute(null)
+                      if (e.key === 'Enter') setEditingQuestion(null)
                     }}
-                    className="h-8"
+                    className="h-8 text-xs"
+                    placeholder="Add a guiding question..."
                   />
                 ) : (
-                  <h3
-                    className="font-semibold cursor-pointer hover:text-primary flex-1 text-sm"
-                    onClick={() => setEditingAttribute(attribute.id)}
+                  <p
+                    className="text-xs text-muted-foreground italic cursor-pointer hover:text-foreground"
+                    onClick={() => setEditingQuestion(attribute.id)}
                   >
-                    {attribute.name}
-                  </h3>
+                    {attribute.question || 'Click to add a guiding question...'}
+                  </p>
                 )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 -mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => deleteAttribute(attribute.id)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
               </div>
               <div className="space-y-2">
                 {attribute.items.map((item) => (
