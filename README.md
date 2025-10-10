@@ -4,10 +4,13 @@ An AI-powered web application that helps you generate innovative ideas using the
 
 ## Features
 
-- **AI-Powered Attribute Generation**: Automatically generate relevant attributes (dimensions) for your challenge using Claude AI
-- **Interactive Zwicky Box Interface**: Full CRUD operations for attributes and items
+- **AI-Powered Attribute Generation**: Automatically generate relevant attributes (dimensions) with guiding questions for your challenge using Claude AI
+- **Interactive Zwicky Box Interface**: Full CRUD operations for attributes, questions, and items
+- **Editable Guiding Questions**: Each attribute includes an editable question to help users think of relevant items
 - **Smart Item Selection**: Select specific items or let the system randomly choose for exploration
 - **AI Idea Generation**: Generate creative, actionable ideas based on selected attribute combinations
+- **Multi-language Support**: AI responds in the same language as your input
+- **Import/Export**: Save and load your Zwicky Box configurations as JSON files
 - **Idea History**: Track and review all generated ideas with their components
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 - **Single-Session Tool**: No login required, start using immediately
@@ -34,7 +37,8 @@ An AI-powered web application that helps you generate innovative ideas using the
 
 1. Clone the repository:
 ```bash
-cd zwicky-app
+git clone https://github.com/jpfaraco/zwicky.git
+cd zwicky
 ```
 
 2. Install dependencies:
@@ -86,58 +90,90 @@ npm run preview
 
 1. **Enter Your Challenge**: Describe the problem or opportunity you want to explore in the challenge input field.
 
-2. **Generate Attributes**: Click "Generate Columns" to let AI create 3-5 relevant attributes for your challenge, or manually add attributes using the "Add Attribute" button.
+2. **Generate Attributes**: Click "Generate Attributes" to let AI create 3-5 relevant attributes with guiding questions for your challenge, or manually add attributes using the "Add Attribute" button.
 
-3. **Add Items**: For each attribute column, click "+ Add Item" to add specific options. You can add as many items as you need.
+3. **Review Guiding Questions**: Each attribute includes a question to help you think of relevant items. Click on any question to edit it.
 
-4. **Select Items**: Click on items to select them (one per attribute). Selected items will be highlighted.
+4. **Add Items**: For each attribute column, click "+ Add Item" to add specific options. Press Enter to quickly add multiple items in sequence.
 
-5. **Generate Ideas**: Click "Generate Idea" to create an AI-powered solution. If you haven't selected items, the system will randomly choose one from each attribute.
+5. **Select Items**: Click on items to select them (one per attribute). Selected items will be highlighted. If you select items from some but not all columns, ideas will only use your selections.
 
-6. **Review Ideas**: All generated ideas appear in the "Generated Ideas" section below, showing the idea text and which components were used.
+6. **Generate Ideas**: Click "Generate Idea" to create an AI-powered solution. If you haven't selected any items, the system will randomly choose one from each attribute.
 
-7. **Iterate**: Adjust your selections and generate multiple ideas to explore different solution combinations.
+7. **Review Ideas**: All generated ideas appear in the "Generated Ideas" section below, showing the idea text and which components were used.
+
+8. **Import/Export**: Use the Import/Export buttons to save your Zwicky Box configuration as JSON or load a previously saved configuration.
+
+9. **Iterate**: Adjust your selections and generate multiple ideas to explore different solution combinations.
 
 ## Features in Detail
 
 ### Attribute Management
-- **AI Generation**: Automatically generate relevant attributes from your challenge description
+- **AI Generation**: Automatically generate relevant attributes with guiding questions from your challenge description
 - **Manual Addition**: Add custom attributes manually
-- **Rename**: Click on attribute names to edit them inline
-- **Delete**: Remove attributes you don't need
+- **Edit Names**: Click on attribute names to edit them inline
+- **Edit Questions**: Click on guiding questions to edit them inline
+- **Delete**: Hover over an attribute and click the X button to remove it
 
 ### Item Management
 - **Add Items**: Populate each attribute with specific options
-- **Rename**: Double-click items to edit them inline
-- **Delete**: Remove items you don't need
-- **Select**: Click items to select them for idea generation
+- **Quick Entry**: Press Enter while editing an item to create a new item below
+- **Edit Items**: Double-click items to edit them inline
+- **Auto-cleanup**: Empty items are automatically deleted when you click away
+- **Delete**: Hover over an item to reveal the X button
+- **Select**: Click items to select them for idea generation (only one per column)
 
 ### Idea Generation
-- **Selected Mode**: Generate ideas using your selected items
-- **Random Mode**: Generate ideas with random selections when nothing is selected
+- **Selective Mode**: If any items are selected, ideas will only use those selections
+- **Random Mode**: If no items are selected, the system randomly chooses one from each attribute
+- **Multi-language**: Ideas are generated in the same language as your input
+- **Character Limit**: Ideas are concise (max 350 characters)
 - **History**: All ideas are saved to a history list during your session
 - **Components Display**: See which attribute items were used for each idea
+
+### Import/Export
+- **Export**: Download your Zwicky Box as a JSON file (challenge, attributes, questions, and items)
+- **Import**: Load a previously saved JSON file to restore your work
+- **Validation**: Import automatically validates file structure and shows errors for invalid files
+- **Auto-clear**: Ideas are cleared when importing to avoid confusion
 
 ## API Configuration
 
 The application uses Claude API for AI-powered features:
 - **Model**: `claude-sonnet-4-20250514`
-- **Max Tokens**: 1000 per request
+- **Max Tokens**: 1000-1500 per request
 - **API Version**: `2023-06-01`
 
 Make sure your API key has sufficient credits for the operations you plan to perform.
+
+## Deployment
+
+The app is deployed on Vercel and uses serverless functions for API proxying. The production deployment automatically:
+- Uses Vercel serverless functions in `/api` directory for secure API key handling
+- Serves the static frontend from the build output
+- Requires `VITE_ANTHROPIC_API_KEY` environment variable to be set in Vercel project settings
 
 ## Project Structure
 
 ```
 zwicky-app/
+├── api/
+│   └── anthropic/v1/
+│       └── messages.js      # Vercel serverless function for API proxy
 ├── src/
 │   ├── components/
-│   │   └── ui/              # Shadcn/ui components
-│   │       ├── button.jsx
-│   │       ├── input.jsx
-│   │       ├── textarea.jsx
-│   │       └── card.jsx
+│   │   ├── ui/              # Shadcn/ui components
+│   │   │   ├── button.jsx
+│   │   │   ├── input.jsx
+│   │   │   ├── textarea.jsx
+│   │   │   └── card.jsx
+│   │   ├── ChallengeInput.jsx    # Challenge input component
+│   │   ├── ZwickyBox.jsx         # Zwicky Box grid component
+│   │   └── IdeasList.jsx         # Generated ideas display
+│   ├── services/
+│   │   └── anthropicService.js   # API service functions
+│   ├── utils/
+│   │   └── zwickyBoxExport.js    # Import/Export utilities
 │   ├── lib/
 │   │   └── utils.js         # Utility functions (cn helper)
 │   ├── App.jsx              # Main application component
@@ -145,8 +181,10 @@ zwicky-app/
 │   ├── index.css            # Global styles with Tailwind
 │   └── main.jsx             # Application entry point
 ├── public/                  # Static assets
-├── server.js                # Express proxy server
+├── server.js                # Express proxy server (local dev)
+├── vercel.json              # Vercel configuration
 ├── .env.example             # Environment variables template
+├── .gitignore               # Git ignore rules (includes .env)
 ├── tailwind.config.js       # Tailwind configuration
 ├── postcss.config.js        # PostCSS configuration
 ├── vite.config.js           # Vite configuration
@@ -156,9 +194,11 @@ zwicky-app/
 ## Important Notes
 
 - **No Data Persistence**: All data is stored in-memory and will be lost when you refresh the page
+- **Export for Persistence**: Use the Export feature to save your work as JSON files
 - **Session-Based**: This is a single-session tool with no user accounts or data storage
 - **API Costs**: Each attribute generation and idea generation consumes API credits
-- **Error Handling**: The app includes error handling for API failures with retry capability
+- **Error Handling**: The app includes error handling for API failures and invalid imports
+- **Security**: API keys are never exposed to the browser (handled by backend/serverless functions)
 
 ## Troubleshooting
 
