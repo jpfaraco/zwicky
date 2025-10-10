@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from './components/ui/button'
-import { Loader2, Sparkles, X } from 'lucide-react'
+import { Loader2, Sparkles, X, Download, Upload } from 'lucide-react'
 import { ChallengeInput } from './components/ChallengeInput'
 import { ZwickyBox } from './components/ZwickyBox'
 import { IdeasList } from './components/IdeasList'
 import { generateAttributes as generateAttributesAPI, generateIdea as generateIdeaAPI } from './services/anthropicService'
+import { exportZwickyBox, importZwickyBox } from './utils/zwickyBoxExport'
 import './App.css'
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
   const [isGeneratingIdea, setIsGeneratingIdea] = useState(false)
   const [ideas, setIdeas] = useState([])
   const [error, setError] = useState(null)
+  const fileInputRef = useRef(null)
 
   const handleGenerateAttributes = async () => {
     if (!challenge.trim()) {
@@ -33,6 +35,37 @@ function App() {
     } finally {
       setIsGeneratingAttributes(false)
     }
+  }
+
+  const handleExport = () => {
+    if (!challenge.trim() && attributes.length === 0) {
+      setError('Nothing to export. Please add a challenge or attributes first.')
+      return
+    }
+    exportZwickyBox(challenge, attributes)
+  }
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleImportFile = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setError(null)
+    try {
+      const data = await importZwickyBox(file)
+      setChallenge(data.challenge)
+      setAttributes(data.attributes)
+      setIdeas([]) // Clear ideas when importing
+    } catch (err) {
+      console.error('Import error:', err)
+      setError(err.message)
+    }
+
+    // Reset file input
+    event.target.value = ''
   }
 
   const handleGenerateIdea = async () => {
@@ -124,7 +157,31 @@ function App() {
         />
 
         {/* Zwicky Box Section Title */}
-        <h2 className="text-2xl font-bold">Zwicky Box</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Zwicky Box</h2>
+          <div className="flex gap-2">
+            <Button onClick={handleImportClick} variant="outline" size="sm">
+              <Upload className="h-4 w-4" />
+              Import
+            </Button>
+            <Button
+              onClick={handleExport}
+              variant="outline"
+              size="sm"
+              disabled={!challenge.trim() && attributes.length === 0}
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          </div>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleImportFile}
+          className="hidden"
+        />
       </div>
 
       {/* Zwicky Box Grid - Full Width */}
