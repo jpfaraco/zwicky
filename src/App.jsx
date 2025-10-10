@@ -279,7 +279,7 @@ Generate an innovative idea:`
       <div className="max-w-4xl mx-auto space-y-8 px-4 md:px-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">Zwicky Box Idea Generator</h1>
+          <h1 className="text-4xl font-bold">Zwicky Box Idea Generator</h1>
           <p className="text-muted-foreground">
             Generate innovative ideas using morphological analysis and AI
           </p>
@@ -302,7 +302,7 @@ Generate an innovative idea:`
         {/* Challenge Input Section */}
         <Card>
           <CardHeader>
-            <CardTitle>Your Challenge</CardTitle>
+            <CardTitle className="text-2xl font-bold">Your challenge</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Textarea
@@ -324,7 +324,7 @@ Generate an innovative idea:`
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  Generate Columns
+                  Generate attributes
                 </>
               )}
             </Button>
@@ -332,27 +332,23 @@ Generate an innovative idea:`
         </Card>
 
         {/* Zwicky Box Section Title */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Zwicky Box</h2>
-          <Button onClick={addAttribute} variant="outline">
-            <Plus className="h-4 w-4" />
-            Add Attribute
-          </Button>
-        </div>
+        <h2 className="text-2xl font-bold">Zwicky Box</h2>
 
-        {attributes.length === 0 && (
+        {attributes.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              No attributes yet. Generate columns from your challenge or add them manually.
+            <CardContent className="py-12 text-center space-y-4">
+              <Button onClick={addAttribute} variant="outline">
+                <Plus className="h-4 w-4" />
+                Add attribute
+              </Button>
+              <p className="text-muted-foreground">
+                No attributes yet. Generate attributes from your challenge or add them manually.
+              </p>
             </CardContent>
           </Card>
-        )}
-      </div>
-
-      {/* Zwicky Box Grid - Full Width */}
-      {attributes.length > 0 && (
-        <div className="overflow-x-auto pb-4 mt-4 px-4 md:px-8">
-          <div className="flex min-w-max border rounded-lg">
+        ) : (
+          <div className="overflow-x-auto pb-4 px-4 md:px-8 -mx-4 md:-mx-8">
+            <div className="flex min-w-max border rounded-lg mx-4 md:mx-8">
                 {attributes.map((attribute, index) => (
                   <div
                     key={attribute.id}
@@ -450,15 +446,24 @@ Generate an innovative idea:`
                           onClick={() => addItem(attribute.id)}
                         >
                           <Plus className="h-4 w-4" />
-                          Add Item
+                          Add item
                         </Button>
                       </div>
                     </div>
                   </div>
                 ))}
+
+                {/* Add Attribute Button Column */}
+                <div className="flex-shrink-0 w-72 px-3 py-4 flex justify-center border-l">
+                  <Button onClick={addAttribute} variant="outline" className="w-full">
+                    <Plus className="h-4 w-4" />
+                    Add attribute
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
       {/* Generate Idea Button & Ideas Section */}
       <div className="max-w-4xl mx-auto space-y-8 px-4 md:px-8 py-8">
@@ -478,7 +483,7 @@ Generate an innovative idea:`
               ) : (
                 <>
                   <Sparkles className="h-5 w-5" />
-                  Generate Idea
+                  Generate idea
                 </>
               )}
             </Button>
