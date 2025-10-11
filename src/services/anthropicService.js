@@ -172,26 +172,28 @@ export async function generateIdeaVariation(challenge, originalIdea) {
       messages: [
         {
           role: "user",
-          content: `You are a specialist critique AI agent and senior innovation strategist. Review the original idea below and generate a MORE plausible, realistic, and overall better variation of it.
+          content: `You are a senior innovation strategist. Given the challenge and an existing idea, generate a DIFFERENT variation that addresses the same challenge in a more plausible, realistic, and practical way.
 
 Challenge: ${challenge}
 
-Original idea:
+Reference idea (for inspiration only):
 ${originalIdea}
 
 Your task:
-- Identify weaknesses, unrealistic assumptions, or gaps in the original idea
-- Generate a variation that addresses these issues while maintaining the core intent
+- Internally analyze what could be improved or done differently
+- Generate a standalone idea that addresses the challenge better
 - Focus on practicality, feasibility, and clear value proposition
-- The variation should be more grounded and actionable than the original
-- You don't need to use the same components from the original idea
+- The new idea should be more grounded and actionable
+- Do NOT reference or mention the original idea in your output
+- Do NOT explain what was wrong with the original idea
+- Present the new idea as if it's a completely fresh solution
 - Avoid absolute promises, fabricated testimonials, and unverifiable claims
 
 Output (in the same language as the input, and output ONLY the content in the format below):
 
 **Title** (in sentence case, not title case)
 
-[2–4 sentences describing what will be done, for whom, and why it should work. Include the main mechanism and why this variation is more realistic/better than the original.]
+[2–4 sentences describing what will be done, for whom, and why it should work. Focus on the value and mechanism of THIS idea only.]
 `,
         },
       ],
