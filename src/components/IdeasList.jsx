@@ -5,23 +5,48 @@ import { Button } from './ui/button'
 import { ChevronDown, Loader2, Sparkles } from 'lucide-react'
 
 export function IdeasList({ ideas, onExpandIdea, onGenerateVariation, generatingVariationId }) {
-  const [animatingId, setAnimatingId] = useState(null)
-  const prevIdeasLengthRef = useRef(ideas.length)
+  const [newIdeaIds, setNewIdeaIds] = useState(new Set())
+  const [expandingIds, setExpandingIds] = useState(new Set())
+  const prevIdeasRef = useRef(ideas)
 
   useEffect(() => {
-    // Check if a new idea was added (list length increased)
-    if (ideas.length > prevIdeasLengthRef.current) {
-      // Animate the newest idea (first in the list)
-      setAnimatingId(ideas[0].id)
+    const prevIdeas = prevIdeasRef.current
 
-      // Clear the animation state after animation completes
-      const timer = setTimeout(() => {
-        setAnimatingId(null)
-      }, 2000)
-
-      return () => clearTimeout(timer)
+    // Check if a new idea was added
+    if (ideas.length > prevIdeas.length) {
+      const newIdea = ideas.find(idea => !prevIdeas.some(prev => prev.id === idea.id))
+      if (newIdea) {
+        setNewIdeaIds(prev => new Set(prev).add(newIdea.id))
+        setTimeout(() => {
+          setNewIdeaIds(prev => {
+            const next = new Set(prev)
+            next.delete(newIdea.id)
+            return next
+          })
+        }, 2000)
+      }
     }
-    prevIdeasLengthRef.current = ideas.length
+
+    // Check if an idea just got expandedContent added
+    ideas.forEach(idea => {
+      const prevIdea = prevIdeas.find(p => p.id === idea.id)
+      if (prevIdea &&
+          prevIdea.expanded === 'loading' &&
+          idea.expanded === true &&
+          idea.expandedContent &&
+          !prevIdea.expandedContent) {
+        setExpandingIds(prev => new Set(prev).add(idea.id))
+        setTimeout(() => {
+          setExpandingIds(prev => {
+            const next = new Set(prev)
+            next.delete(idea.id)
+            return next
+          })
+        }, 500)
+      }
+    })
+
+    prevIdeasRef.current = ideas
   }, [ideas])
 
   if (ideas.length === 0) return null
@@ -30,34 +55,40 @@ export function IdeasList({ ideas, onExpandIdea, onGenerateVariation, generating
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Generated Ideas</h2>
       <div className="space-y-4">
-        {ideas.map((idea) => (
-          <div
-            key={idea.id}
-            className={`${
-              animatingId === idea.id
-                ? 'animate-slideDown overflow-hidden'
-                : ''
-            }`}
-          >
-            <Card>
-            <CardHeader>
-              <div className="flex gap-1 flex-col">
-                <span className="text-xs text-muted-foreground">
-                  {idea.timestamp}
-                </span>
-                <CardTitle className="text-lg">{idea.title}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="idea-content text-md text-foreground">
-                <ReactMarkdown>{idea.text}</ReactMarkdown>
-              </div>
+        {ideas.map((idea) => {
+          const isNewIdea = newIdeaIds.has(idea.id)
+          const isExpanding = expandingIds.has(idea.id)
 
-              {idea.expanded === true && idea.expandedContent && (
-                <div className="idea-content text-md text-foreground pt-3 border-t">
-                  <ReactMarkdown>{idea.expandedContent}</ReactMarkdown>
+          return (
+            <div
+              key={idea.id}
+              className={isNewIdea ? 'animate-slideDown overflow-hidden' : ''}
+            >
+              <Card>
+              <CardHeader>
+                <div className="flex gap-1 flex-col">
+                  <span className="text-xs text-muted-foreground">
+                    {idea.timestamp}
+                  </span>
+                  <CardTitle className="text-lg">{idea.title}</CardTitle>
                 </div>
-              )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="idea-content text-md text-foreground">
+                  <ReactMarkdown>{idea.text}</ReactMarkdown>
+                </div>
+
+                <div
+                  className={`idea-content text-md text-foreground overflow-hidden ${
+                    isExpanding ? 'transition-[max-height,padding,border] duration-500 ease-in-out' : ''
+                  } ${
+                    idea.expanded === true && idea.expandedContent
+                      ? 'max-h-[2000px] pt-3 border-t'
+                      : 'max-h-0 pt-0 border-0'
+                  }`}
+                >
+                  {idea.expandedContent && <ReactMarkdown>{idea.expandedContent}</ReactMarkdown>}
+                </div>
 
               <div className="flex gap-2 pt-2">
                 {!idea.expanded && (
@@ -115,8 +146,9 @@ export function IdeasList({ ideas, onExpandIdea, onGenerateVariation, generating
               )}
             </CardContent>
           </Card>
-          </div>
-        ))}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

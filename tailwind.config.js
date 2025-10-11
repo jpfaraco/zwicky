@@ -64,11 +64,9 @@ export default {
         slideDown: {
           "0%": {
             maxHeight: "0",
-            opacity: "0",
           },
           "100%": {
             maxHeight: "2000px",
-            opacity: "1",
           },
         },
       },
