@@ -9,7 +9,10 @@ An AI-powered web application that helps you generate innovative ideas using the
 - **Editable Guiding Questions**: Each attribute includes an editable question to help users think of relevant items
 - **Smart Item Selection**: Select specific items or let the system randomly choose for exploration
 - **AI Idea Generation**: Generate creative, actionable ideas based on selected attribute combinations
+- **Progressive Idea Expansion**: Ideas are generated as concise summaries first (2-4 sentences), saving tokens and time. Expand promising ideas on-demand to get full execution details
+- **AI-Powered Idea Variations**: Generate improved, more realistic variations of any idea using a specialist critique AI agent
 - **Multi-language Support**: AI responds in the same language as your input
+- **Markdown Formatting**: Ideas are rendered with proper markdown formatting for better readability
 - **Import/Export**: Save and load your Zwicky Box configurations as JSON files
 - **Idea History**: Track and review all generated ideas with their components
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
@@ -23,6 +26,7 @@ An AI-powered web application that helps you generate innovative ideas using the
 - **Tailwind CSS** - Styling
 - **Shadcn/ui** - UI component library
 - **Claude API (Anthropic)** - AI-powered attribute and idea generation
+- **React Markdown** - Markdown rendering for ideas
 - **Lucide React** - Icons
 
 ## Getting Started
@@ -98,13 +102,21 @@ npm run preview
 
 5. **Select Items**: Click on items to select them (one per attribute). Selected items will be highlighted. If you select items from some but not all columns, ideas will only use your selections.
 
-6. **Generate Ideas**: Click "Generate Idea" to create an AI-powered solution. If you haven't selected any items, the system will randomly choose one from each attribute.
+6. **Generate Ideas**: Click "Generate Idea" to create an AI-powered solution. If you haven't selected any items, the system will randomly choose one from each attribute. Ideas are initially generated as concise 2-4 sentence summaries.
 
-7. **Review Ideas**: All generated ideas appear in the "Generated Ideas" section below, showing the idea text and which components were used.
+7. **Review Ideas**: All generated ideas appear in the "Generated Ideas" section below, showing the idea title, description, and which components were used (if applicable).
 
-8. **Import/Export**: Use the Import/Export buttons to save your Zwicky Box configuration as JSON or load a previously saved configuration.
+8. **Expand Ideas**: Click the "Expand" button on any idea to generate full execution details including:
+   - Step-by-step execution plan (3-5 steps)
+   - Quick test methodology (hypothesis, experiment, success metrics)
+   - Risks & compliance considerations with mitigations
+   - Required resources (people, tools, budget)
 
-9. **Iterate**: Adjust your selections and generate multiple ideas to explore different solution combinations.
+9. **Generate Variations**: Click "Generate variation" on any idea to create an improved, more realistic version using a specialist critique AI agent. Variations maintain the core intent but address weaknesses and unrealistic assumptions.
+
+10. **Import/Export**: Use the Import/Export buttons to save your Zwicky Box configuration as JSON or load a previously saved configuration.
+
+11. **Iterate**: Adjust your selections and generate multiple ideas to explore different solution combinations.
 
 ## Features in Detail
 
@@ -123,13 +135,16 @@ npm run preview
 - **Delete**: Hover over an item to reveal the X button
 - **Select**: Click items to select them for idea generation (only one per column)
 
-### Idea Generation
+### Idea Generation & Management
 - **Selective Mode**: If any items are selected, ideas will only use those selections
 - **Random Mode**: If no items are selected, the system randomly chooses one from each attribute
+- **Progressive Generation**: Initial ideas are concise summaries (2-4 sentences) to save time and API tokens
+- **On-Demand Expansion**: Click "Expand" to generate full execution details for promising ideas
+- **AI Critique & Variations**: Generate improved variations of any idea using a specialist critique AI that identifies weaknesses and suggests more realistic alternatives
 - **Multi-language**: Ideas are generated in the same language as your input
-- **Character Limit**: Ideas are concise (max 350 characters)
-- **History**: All ideas are saved to a history list during your session
-- **Components Display**: See which attribute items were used for each idea
+- **Markdown Rendering**: Ideas support markdown formatting with proper hierarchy and spacing
+- **History**: All ideas and variations are saved to a history list during your session
+- **Components Display**: See which attribute items were used for each idea (hidden for variations that don't use components)
 
 ### Import/Export
 - **Export**: Download your Zwicky Box as a JSON file (challenge, attributes, questions, and items)
@@ -141,8 +156,14 @@ npm run preview
 
 The application uses Claude API for AI-powered features:
 - **Model**: `claude-sonnet-4-20250514`
-- **Max Tokens**: 1000-1500 per request
+- **Max Tokens**:
+  - Attribute generation: 1500 tokens
+  - Initial idea summary: 300 tokens
+  - Idea expansion: 1200 tokens
+  - Idea variation: 350 tokens
 - **API Version**: `2023-06-01`
+
+The progressive generation approach (summary first, expand on demand) significantly reduces API costs by only generating full details for promising ideas.
 
 Make sure your API key has sufficient credits for the operations you plan to perform.
 
@@ -196,7 +217,8 @@ zwicky-app/
 - **No Data Persistence**: All data is stored in-memory and will be lost when you refresh the page
 - **Export for Persistence**: Use the Export feature to save your work as JSON files
 - **Session-Based**: This is a single-session tool with no user accounts or data storage
-- **API Costs**: Each attribute generation and idea generation consumes API credits
+- **API Costs**: Each AI operation (attribute generation, idea generation, expansion, variation) consumes API credits. The progressive generation approach helps minimize costs by only generating full details when needed
+- **Token Optimization**: Ideas are generated progressively (summary first, details on demand) to reduce API costs and improve response times
 - **Error Handling**: The app includes error handling for API failures and invalid imports
 - **Security**: API keys are never exposed to the browser (handled by backend/serverless functions)
 
@@ -245,4 +267,5 @@ Built with:
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Shadcn/ui](https://ui.shadcn.com/)
 - [Claude API by Anthropic](https://www.anthropic.com/)
+- [React Markdown](https://github.com/remarkjs/react-markdown)
 - [Lucide Icons](https://lucide.dev/)

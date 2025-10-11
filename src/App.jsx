@@ -4,7 +4,7 @@ import { Loader2, Sparkles, X, Download, Upload } from 'lucide-react'
 import { ChallengeInput } from './components/ChallengeInput'
 import { ZwickyBox } from './components/ZwickyBox'
 import { IdeasList } from './components/IdeasList'
-import { generateAttributes as generateAttributesAPI, generateIdea as generateIdeaAPI } from './services/anthropicService'
+import { generateAttributes as generateAttributesAPI, generateIdea as generateIdeaAPI, generateIdeaDetails as generateIdeaDetailsAPI, generateIdeaVariation as generateIdeaVariationAPI } from './services/anthropicService'
 import { exportZwickyBox, importZwickyBox } from './utils/zwickyBoxExport'
 import './App.css'
 
@@ -13,6 +13,7 @@ function App() {
   const [attributes, setAttributes] = useState([])
   const [isGeneratingAttributes, setIsGeneratingAttributes] = useState(false)
   const [isGeneratingIdea, setIsGeneratingIdea] = useState(false)
+  const [generatingVariationId, setGeneratingVariationId] = useState(null)
   const [ideas, setIdeas] = useState([])
   const [error, setError] = useState(null)
   const fileInputRef = useRef(null)
@@ -107,11 +108,21 @@ function App() {
 
       const ideaText = await generateIdeaAPI(challenge, selectedComponents)
 
+      // Extract title from the idea text (first line with ** markers)
+      const titleMatch = ideaText.match(/\*\*(.+?)\*\*/)
+      const title = titleMatch ? titleMatch[1] : 'Idea'
+
+      // Remove the title from the text to avoid duplication
+      const textWithoutTitle = ideaText.replace(/^\*\*.+?\*\*\s*\n*/m, '').trim()
+
       const newIdea = {
         id: Date.now(),
-        text: ideaText,
+        title: title,
+        text: textWithoutTitle,
         components: selectedComponents,
-        timestamp: new Date().toLocaleString()
+        timestamp: new Date().toLocaleString(),
+        expanded: false,
+        expandedContent: null
       }
 
       setIdeas([newIdea, ...ideas])
@@ -120,6 +131,71 @@ function App() {
       setError(`Failed to generate idea: ${err.message}`)
     } finally {
       setIsGeneratingIdea(false)
+    }
+  }
+
+  const handleExpandIdea = async (ideaId) => {
+    const idea = ideas.find(i => i.id === ideaId)
+    if (!idea || idea.expanded) return
+
+    setError(null)
+
+    try {
+      // Update the idea to show it's being expanded
+      setIdeas(ideas.map(i => i.id === ideaId ? { ...i, expanded: 'loading' } : i))
+
+      const fullIdeaText = `**${idea.title}**\n\n${idea.text}`
+      const detailsText = await generateIdeaDetailsAPI(challenge, idea.components, fullIdeaText)
+
+      // Update the idea with the expanded content
+      setIdeas(ideas.map(i =>
+        i.id === ideaId
+          ? { ...i, expanded: true, expandedContent: detailsText }
+          : i
+      ))
+    } catch (err) {
+      console.error('Error expanding idea:', err)
+      setError(`Failed to expand idea: ${err.message}`)
+      // Revert the expanded state on error
+      setIdeas(ideas.map(i => i.id === ideaId ? { ...i, expanded: false } : i))
+    }
+  }
+
+  const handleGenerateVariation = async (ideaId) => {
+    const idea = ideas.find(i => i.id === ideaId)
+    if (!idea) return
+
+    setGeneratingVariationId(ideaId)
+    setError(null)
+
+    try {
+      const fullIdeaText = `**${idea.title}**\n\n${idea.text}`
+      const variationText = await generateIdeaVariationAPI(challenge, fullIdeaText)
+
+      // Extract title from the variation text
+      const titleMatch = variationText.match(/\*\*(.+?)\*\*/)
+      const title = titleMatch ? titleMatch[1] : 'Idea Variation'
+
+      // Remove the title from the text to avoid duplication
+      const textWithoutTitle = variationText.replace(/^\*\*.+?\*\*\s*\n*/m, '').trim()
+
+      const newVariation = {
+        id: Date.now(),
+        title: title,
+        text: textWithoutTitle,
+        components: [], // Variations don't necessarily use the same components
+        timestamp: new Date().toLocaleString(),
+        expanded: false,
+        expandedContent: null
+      }
+
+      // Add the variation at the top of the list
+      setIdeas([newVariation, ...ideas])
+    } catch (err) {
+      console.error('Error generating variation:', err)
+      setError(`Failed to generate variation: ${err.message}`)
+    } finally {
+      setGeneratingVariationId(null)
     }
   }
 
@@ -161,7 +237,7 @@ function App() {
           <h2 className="text-2xl font-bold">Zwicky Box</h2>
           <div className="flex gap-2">
             <Button onClick={handleImportClick} variant="outline" size="sm">
-              <Upload className="h-4 w-4" />
+              <Download className="h-4 w-4" />
               Import
             </Button>
             <Button
@@ -170,7 +246,7 @@ function App() {
               size="sm"
               disabled={!challenge.trim() && attributes.length === 0}
             >
-              <Download className="h-4 w-4" />
+              <Upload className="h-4 w-4" />
               Export
             </Button>
           </div>
@@ -214,7 +290,7 @@ function App() {
           </div>
         )}
 
-        <IdeasList ideas={ideas} />
+        <IdeasList ideas={ideas} onExpandIdea={handleExpandIdea} onGenerateVariation={handleGenerateVariation} generatingVariationId={generatingVariationId} />
       </div>
     </div>
   )

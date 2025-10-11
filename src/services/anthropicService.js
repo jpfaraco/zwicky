@@ -1,15 +1,16 @@
 export async function generateAttributes(challenge) {
-  const response = await fetch('/api/anthropic/v1/messages', {
-    method: 'POST',
+  const response = await fetch("/api/anthropic/v1/messages", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: "claude-sonnet-4-20250514",
       max_tokens: 1500,
-      messages: [{
-        role: 'user',
-        content: `You are an expert at morphological analysis and creative problem-solving.
+      messages: [
+        {
+          role: "user",
+          content: `You are an expert at morphological analysis and creative problem-solving.
 Given a challenge, generate 3 to 5 relevant attributes (dimensions) that should be considered when creating solutions.
 
 For each attribute, also generate a guiding question that helps people think of items for that attribute.
@@ -34,68 +35,173 @@ Example for "How might we increase customer engagement?":
 
 Challenge: ${challenge}
 
-Generate the attributes with questions as a JSON array:`
-      }]
-    })
-  })
+Generate the attributes with questions as a JSON array:`,
+        },
+      ],
+    }),
+  });
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`)
+    throw new Error(`API error: ${response.status}`);
   }
 
-  const data = await response.json()
-  const attributesText = data.content[0].text
-  const attributesData = JSON.parse(attributesText)
+  const data = await response.json();
+  const attributesText = data.content[0].text;
+  const attributesData = JSON.parse(attributesText);
 
   return attributesData.map((attr, index) => ({
     id: Date.now() + index,
     name: attr.name,
     question: attr.question,
-    items: []
-  }))
+    items: [],
+  }));
 }
 
 export async function generateIdea(challenge, selectedComponents) {
-  const componentsText = selectedComponents
-    .map(comp => `${comp.attribute}: ${comp.item}`)
-    .join('\n')
+  const componentsText = selectedComponents.map((comp) => `${comp.attribute}: ${comp.item}`).join("\n");
 
-  const response = await fetch('/api/anthropic/v1/messages', {
-    method: 'POST',
+  const response = await fetch("/api/anthropic/v1/messages", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{
-        role: 'user',
-        content: `You are a creative innovation expert. Generate a single, specific, actionable idea that solves the given challenge by combining the selected attribute items.
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 300,
+      messages: [
+        {
+          role: "user",
+          content: `You are a senior growth & innovation strategist. Generate ONE practical idea by combining ALL selected items from a morphological matrix.
 
-Requirements:
-- The idea MUST incorporate ALL provided attribute items
-- The idea MUST address the original challenge
-- The idea should be specific, not generic
-- The idea should be feasible and realistic
-- The idea should be described in 1-2 sentences, maximum 350 characters
-- Be creative and think outside the box
-- Respond in the same language as the challenge and attribute items
-- Return ONLY the idea text, no additional formatting
+Rules:
+- Use ALL selected components. If any item creates an ethical/legal/operational conflict, adapt the execution while preserving the item's intent and state the adjustment.
+- Focus on a real end-user problem and the clear value delivered.
+- Avoid absolute promises, fabricated testimonials, and unverifiable claims. Use plain language.
+- The idea must be testable within 7–14 days with plausible resources.
+
+Input:
+Challenge: ${challenge}
+Selected components: ${componentsText}
+
+Output (in the same language as the input, and output ONLY the content in the format below):
+
+**Title** (in sentence case, not title case)
+
+[2–4 sentences describing what will be done, for whom, and why it should work. Include the main mechanism that connects the selected components.]
+`,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+export async function generateIdeaDetails(challenge, selectedComponents, ideaSummary) {
+  const componentsText = selectedComponents.map((comp) => `${comp.attribute}: ${comp.item}`).join("\n");
+
+  const response = await fetch("/api/anthropic/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1200,
+      messages: [
+        {
+          role: "user",
+          content: `You are a senior growth & innovation strategist. You previously generated this idea summary:
+
+${ideaSummary}
+
+Now generate the detailed execution plan for this idea.
+
+Challenge: ${challenge}
+Selected components: ${componentsText}
+
+Output (in the same language as the input, and output ONLY the content in the format below. Use sentence case for all headings, not title case):
+
+**How to execute:**
+1) …
+2) …
+3) …
+4) …
+5) …
+
+**Quick test:**
+- **Hypothesis:**
+- **7–14 day experiment:**
+- **Primary success metric:**
+- **Initial target:**
+
+**Risks & compliance:**
+- **Risk:**
+- **Mitigation:**
+
+**Required resources:**
+- [People, tools, rough budget]
+`,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+export async function generateIdeaVariation(challenge, originalIdea) {
+  const response = await fetch("/api/anthropic/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 350,
+      messages: [
+        {
+          role: "user",
+          content: `You are a specialist critique AI agent and senior innovation strategist. Review the original idea below and generate a MORE plausible, realistic, and overall better variation of it.
 
 Challenge: ${challenge}
 
-Selected Components:
-${componentsText}
+Original idea:
+${originalIdea}
 
-Generate an innovative idea:`
-      }]
-    })
-  })
+Your task:
+- Identify weaknesses, unrealistic assumptions, or gaps in the original idea
+- Generate a variation that addresses these issues while maintaining the core intent
+- Focus on practicality, feasibility, and clear value proposition
+- The variation should be more grounded and actionable than the original
+- You don't need to use the same components from the original idea
+- Avoid absolute promises, fabricated testimonials, and unverifiable claims
+
+Output (in the same language as the input, and output ONLY the content in the format below):
+
+**Title** (in sentence case, not title case)
+
+[2–4 sentences describing what will be done, for whom, and why it should work. Include the main mechanism and why this variation is more realistic/better than the original.]
+`,
+        },
+      ],
+    }),
+  });
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.status}`)
+    throw new Error(`API error: ${response.status}`);
   }
 
-  const data = await response.json()
-  return data.content[0].text
+  const data = await response.json();
+  return data.content[0].text;
 }

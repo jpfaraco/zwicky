@@ -3,3 +3,54 @@
   width: 100%;
   min-height: 100vh;
 }
+
+/* Markdown idea content styles */
+.idea-content p {
+  margin-bottom: 0.75rem;
+  line-height: 1.625;
+}
+
+.idea-content p:last-child {
+  margin-bottom: 0;
+}
+
+.idea-content strong {
+  font-weight: 600;
+  display: block;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.idea-content li strong {
+  display: inline;
+  margin: 0;
+}
+
+.idea-content p:first-child strong {
+  margin-top: 0;
+  font-size: 1.05em;
+}
+
+.idea-content ul,
+.idea-content ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+}
+
+.idea-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.625;
+}
+
+.idea-content li:last-child {
+  margin-bottom: 0;
+}
+
+.idea-content ul {
+  list-style-type: disc;
+}
+
+.idea-content ol {
+  list-style-type: decimal;
+}
