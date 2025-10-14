@@ -71,13 +71,13 @@ export async function generateIdea(challenge, selectedComponents) {
       messages: [
         {
           role: "user",
-          content: `You are a senior growth & innovation strategist. Generate ONE practical idea by combining ALL selected items from a morphological matrix.
+          content: `You are a senior growth & innovation strategist. Generate a concise innovative idea that addresses the challenge using the selected components.
 
 Rules:
 - Use ALL selected components. If any item creates an ethical/legal/operational conflict, adapt the execution while preserving the item's intent and state the adjustment.
-- Focus on a real end-user problem and the clear value delivered.
-- Avoid absolute promises, fabricated testimonials, and unverifiable claims. Use plain language.
-- The idea must be testable within 7–14 days with plausible resources.
+- The idea must be creative but realistic
+- The description should be 2-4 sentences maximum (this is just a summary)
+- The idea should be clear and actionable
 
 Input:
 Challenge: ${challenge}
@@ -87,7 +87,7 @@ Output (in the same language as the input, and output ONLY the content in the fo
 
 **Title** (in sentence case, not title case)
 
-[2–4 sentences describing what will be done, for whom, and why it should work. Include the main mechanism that connects the selected components.]
+[2-4 sentence description of the idea]
 `,
         },
       ],

@@ -4,6 +4,7 @@ import { Loader2, Sparkles, X, Download, Upload } from 'lucide-react'
 import { ChallengeInput } from './components/ChallengeInput'
 import { ZwickyBox } from './components/ZwickyBox'
 import { IdeasList } from './components/IdeasList'
+import { ThemeToggle } from './components/ThemeToggle'
 import { generateAttributes as generateAttributesAPI, generateIdea as generateIdeaAPI, generateIdeaDetails as generateIdeaDetailsAPI, generateIdeaVariation as generateIdeaVariationAPI } from './services/anthropicService'
 import { exportZwickyBox, importZwickyBox } from './utils/zwickyBoxExport'
 import './App.css'
@@ -186,7 +187,8 @@ function App() {
         components: [], // Variations don't necessarily use the same components
         timestamp: new Date().toLocaleString(),
         expanded: false,
-        expandedContent: null
+        expandedContent: null,
+        isVariation: true
       }
 
       // Add the variation at the top of the list
@@ -203,11 +205,14 @@ function App() {
     <div className="min-h-screen bg-background py-4 md:py-8">
       <div className="max-w-4xl mx-auto space-y-8 px-4 md:px-8">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">Zwicky Box Idea Generator</h1>
-          <p className="text-muted-foreground">
-            Generate innovative ideas using morphological analysis and AI
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold">Zwicky Box Idea Generator</h1>
+            <p className="text-muted-foreground">
+              Generate innovative ideas using morphological analysis and AI
+            </p>
+          </div>
+          <ThemeToggle />
         </div>
 
         {/* Error Display */}

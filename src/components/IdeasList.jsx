@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card'
 import { Button } from './ui/button'
+import { Badge } from './ui/badge'
 import { ChevronDown, Loader2, Sparkles } from 'lucide-react'
 
 export function IdeasList({ ideas, onExpandIdea, onGenerateVariation, generatingVariationId }) {
@@ -66,11 +67,19 @@ export function IdeasList({ ideas, onExpandIdea, onGenerateVariation, generating
             >
               <Card>
               <CardHeader>
-                <div className="flex gap-1 flex-col">
-                  <span className="text-xs text-muted-foreground">
-                    {idea.timestamp}
-                  </span>
-                  <CardTitle className="text-lg">{idea.title}</CardTitle>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex gap-1 flex-col flex-1">
+                    <span className="text-xs text-muted-foreground">
+                      {idea.timestamp}
+                    </span>
+                    <CardTitle className="text-lg">{idea.title}</CardTitle>
+                  </div>
+                  {idea.isVariation && (
+                    <Badge variant="secondary" className="flex items-center gap-1 shrink-0">
+                      <Sparkles className="h-3 w-3" />
+                      Variation
+                    </Badge>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -134,12 +143,9 @@ export function IdeasList({ ideas, onExpandIdea, onGenerateVariation, generating
                   <p className="text-sm font-medium mb-2">Components used:</p>
                   <div className="flex flex-wrap gap-2">
                     {idea.components.map((comp, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs bg-secondary px-2 py-1 rounded"
-                      >
-                        <strong>{comp.attribute}:</strong> {comp.item}
-                      </span>
+                      <Badge key={idx} variant="secondary">
+                        <strong>{comp.attribute}:</strong>&nbsp;{comp.item}
+                      </Badge>
                     ))}
                   </div>
                 </div>
