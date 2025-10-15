@@ -1,10 +1,10 @@
 # Zwicky Box Idea Generator
 
-An AI-powered web application that helps you generate innovative ideas using the Zwicky Box (morphological analysis) method combined with Claude AI.
+An AI-powered web application that helps you generate innovative ideas using the Zwicky Box (morphological analysis) method combined with OpenAI's GPT-4o Mini via Vercel AI Gateway.
 
 ## Features
 
-- **AI-Powered Attribute Generation**: Automatically generate relevant attributes (dimensions) with guiding questions for your challenge using Claude AI
+- **AI-Powered Attribute Generation**: Automatically generate relevant attributes (dimensions) with guiding questions for your challenge using AI
 - **Interactive Zwicky Box Interface**: Full CRUD operations for attributes, questions, and items
 - **Editable Guiding Questions**: Each attribute includes an editable question to help users think of relevant items
 - **Smart Item Selection**: Select specific items or let the system randomly choose for exploration
@@ -22,10 +22,11 @@ An AI-powered web application that helps you generate innovative ideas using the
 
 - **React** - UI framework
 - **Vite** - Build tool and dev server
-- **Express** - Backend proxy server
+- **Vercel AI Gateway** - AI model routing and management
+- **OpenAI GPT-4o Mini** - AI-powered attribute and idea generation
+- **Vercel Analytics** - Web analytics and performance monitoring
 - **Tailwind CSS** - Styling
 - **Shadcn/ui** - UI component library
-- **Claude API (Anthropic)** - AI-powered attribute and idea generation
 - **React Markdown** - Markdown rendering for ideas
 - **Lucide React** - Icons
 
@@ -35,7 +36,7 @@ An AI-powered web application that helps you generate innovative ideas using the
 
 - Node.js (v20.19+ or v22.12+ required by Vite)
 - npm or yarn
-- Anthropic API key ([Get one here](https://console.anthropic.com/))
+- Vercel AI Gateway API key ([Get one here](https://vercel.com/dashboard/ai-gateway))
 
 ### Installation
 
@@ -55,28 +56,20 @@ npm install
 cp .env.example .env
 ```
 
-4. Edit `.env` and add your Anthropic API key:
+4. Edit `.env` and add your Vercel AI Gateway API key:
 ```
-VITE_ANTHROPIC_API_KEY=your_actual_api_key_here
+VITE_AI_GATEWAY_API_KEY=your_actual_api_key_here
 ```
 
 ### Running the Application
 
-The application requires two servers to run:
-
-1. **Start the proxy server** (in one terminal):
-```bash
-npm run server
-```
-This starts the Express backend proxy on `http://localhost:3001` that handles API requests to Anthropic.
-
-2. **Start the development server** (in another terminal):
+Start the development server:
 ```bash
 npm run dev
 ```
 This starts the Vite dev server at `http://localhost:5173`
 
-The frontend (Vite) will proxy API calls to the backend server, which securely handles your API key.
+The application calls Vercel AI Gateway directly from the frontend using your API key.
 
 ### Building for Production
 
@@ -154,33 +147,32 @@ npm run preview
 
 ## API Configuration
 
-The application uses Claude API for AI-powered features:
-- **Model**: `claude-sonnet-4-20250514`
+The application uses Vercel AI Gateway with OpenAI GPT-4o Mini for AI-powered features:
+- **Model**: `gpt-4o-mini`
+- **Gateway**: Vercel AI Gateway (`https://ai-gateway.vercel.sh/v1`)
 - **Max Tokens**:
   - Attribute generation: 1500 tokens
   - Initial idea summary: 300 tokens
   - Idea expansion: 1200 tokens
   - Idea variation: 350 tokens
-- **API Version**: `2023-06-01`
 
 The progressive generation approach (summary first, expand on demand) significantly reduces API costs by only generating full details for promising ideas.
 
-Make sure your API key has sufficient credits for the operations you plan to perform.
+Vercel AI Gateway provides centralized management, monitoring, and cost tracking for your AI usage.
 
 ## Deployment
 
-The app is deployed on Vercel and uses serverless functions for API proxying. The production deployment automatically:
-- Uses Vercel serverless functions in `/api` directory for secure API key handling
+The app is deployed on Vercel as a static site. The production deployment:
 - Serves the static frontend from the build output
-- Requires `VITE_ANTHROPIC_API_KEY` environment variable to be set in Vercel project settings
+- Calls Vercel AI Gateway directly from the frontend
+- Automatically uses `VERCEL_OIDC_TOKEN` for authentication (no API key needed in Vercel settings)
+- The OIDC token is automatically injected by Vercel and scoped to your project for enhanced security
+- Includes Vercel Web Analytics for tracking page views and performance metrics
 
 ## Project Structure
 
 ```
 zwicky-app/
-├── api/
-│   └── anthropic/v1/
-│       └── messages.js      # Vercel serverless function for API proxy
 ├── src/
 │   ├── components/
 │   │   ├── ui/              # Shadcn/ui components
@@ -190,9 +182,10 @@ zwicky-app/
 │   │   │   └── card.jsx
 │   │   ├── ChallengeInput.jsx    # Challenge input component
 │   │   ├── ZwickyBox.jsx         # Zwicky Box grid component
-│   │   └── IdeasList.jsx         # Generated ideas display
+│   │   ├── IdeasList.jsx         # Generated ideas display
+│   │   └── ThemeToggle.jsx       # Dark/light mode toggle
 │   ├── services/
-│   │   └── anthropicService.js   # API service functions
+│   │   └── aiGatewayService.js   # AI Gateway API service
 │   ├── utils/
 │   │   └── zwickyBoxExport.js    # Import/Export utilities
 │   ├── lib/
@@ -202,9 +195,7 @@ zwicky-app/
 │   ├── index.css            # Global styles with Tailwind
 │   └── main.jsx             # Application entry point
 ├── public/                  # Static assets
-├── server.js                # Express proxy server (local dev)
-├── vercel.json              # Vercel configuration
-├── .env.example             # Environment variables template
+├── .env                     # Environment variables (not in git)
 ├── .gitignore               # Git ignore rules (includes .env)
 ├── tailwind.config.js       # Tailwind configuration
 ├── postcss.config.js        # PostCSS configuration
@@ -220,20 +211,21 @@ zwicky-app/
 - **API Costs**: Each AI operation (attribute generation, idea generation, expansion, variation) consumes API credits. The progressive generation approach helps minimize costs by only generating full details when needed
 - **Token Optimization**: Ideas are generated progressively (summary first, details on demand) to reduce API costs and improve response times
 - **Error Handling**: The app includes error handling for API failures and invalid imports
-- **Security**: API keys are never exposed to the browser (handled by backend/serverless functions)
+- **Security**: Uses Vercel OIDC token authentication in production deployments (automatically available). Local development uses `VITE_AI_GATEWAY_API_KEY` from `.env` file
 
 ## Troubleshooting
 
 ### API Key Not Working
 - Make sure your `.env` file is in the `zwicky-app` directory
+- Verify the API key starts with `vck_` (Vercel AI Gateway key format)
 - Verify the API key is correctly copied (no extra spaces)
-- Restart **both** the proxy server and development server after adding the API key
-- Check that the proxy server is running on port 3001
+- Restart the development server after adding the API key
+- Check the browser console for any authorization errors
 
-### CORS or Network Errors
-- Ensure both servers are running (proxy server on 3001, Vite on 5173)
-- Check that no other applications are using ports 3001 or 5173
-- Verify the proxy server logs show incoming requests
+### Network Errors
+- Verify your internet connection
+- Check the browser console for any CORS or network errors
+- Ensure the AI Gateway endpoint is accessible: `https://ai-gateway.vercel.sh/v1/chat/completions`
 
 ### Tailwind Styles Not Applying
 - Clear your browser cache
@@ -264,8 +256,10 @@ MIT
 Built with:
 - [React](https://react.dev/)
 - [Vite](https://vite.dev/)
+- [Vercel AI Gateway](https://vercel.com/docs/ai-gateway)
+- [Vercel Analytics](https://vercel.com/docs/analytics)
+- [OpenAI GPT-4o Mini](https://openai.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Shadcn/ui](https://ui.shadcn.com/)
-- [Claude API by Anthropic](https://www.anthropic.com/)
 - [React Markdown](https://github.com/remarkjs/react-markdown)
 - [Lucide Icons](https://lucide.dev/)

@@ -1,11 +1,17 @@
+// Get API key from environment (VITE_AI_GATEWAY_API_KEY for local dev, VERCEL_OIDC_TOKEN for production)
+const getApiKey = () => {
+  return import.meta.env.VITE_AI_GATEWAY_API_KEY || import.meta.env.VERCEL_OIDC_TOKEN;
+};
+
 export async function generateAttributes(challenge) {
-  const response = await fetch("/api/anthropic/v1/messages", {
+  const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${getApiKey()}`,
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "gpt-4o-mini",
       max_tokens: 1500,
       messages: [
         {
@@ -46,8 +52,10 @@ Generate the attributes with questions as a JSON array:`,
   }
 
   const data = await response.json();
-  const attributesText = data.content[0].text;
-  const attributesData = JSON.parse(attributesText);
+  const attributesText = data.choices[0].message.content;
+  // Strip markdown code blocks if present
+  const jsonText = attributesText.replace(/```json\s*|\s*```/g, '').trim();
+  const attributesData = JSON.parse(jsonText);
 
   return attributesData.map((attr, index) => ({
     id: Date.now() + index,
@@ -60,13 +68,14 @@ Generate the attributes with questions as a JSON array:`,
 export async function generateIdea(challenge, selectedComponents) {
   const componentsText = selectedComponents.map((comp) => `${comp.attribute}: ${comp.item}`).join("\n");
 
-  const response = await fetch("/api/anthropic/v1/messages", {
+  const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${getApiKey()}`,
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "gpt-4o-mini",
       max_tokens: 300,
       messages: [
         {
@@ -99,19 +108,20 @@ Output (in the same language as the input, and output ONLY the content in the fo
   }
 
   const data = await response.json();
-  return data.content[0].text;
+  return data.choices[0].message.content;
 }
 
 export async function generateIdeaDetails(challenge, selectedComponents, ideaSummary) {
   const componentsText = selectedComponents.map((comp) => `${comp.attribute}: ${comp.item}`).join("\n");
 
-  const response = await fetch("/api/anthropic/v1/messages", {
+  const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${getApiKey()}`,
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "gpt-4o-mini",
       max_tokens: 1200,
       messages: [
         {
@@ -157,17 +167,18 @@ Output (in the same language as the input, and output ONLY the content in the fo
   }
 
   const data = await response.json();
-  return data.content[0].text;
+  return data.choices[0].message.content;
 }
 
 export async function generateIdeaVariation(challenge, originalIdea) {
-  const response = await fetch("/api/anthropic/v1/messages", {
+  const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${getApiKey()}`,
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "gpt-4o-mini",
       max_tokens: 350,
       messages: [
         {
@@ -205,5 +216,5 @@ Output (in the same language as the input, and output ONLY the content in the fo
   }
 
   const data = await response.json();
-  return data.content[0].text;
+  return data.choices[0].message.content;
 }

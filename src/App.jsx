@@ -5,7 +5,7 @@ import { ChallengeInput } from './components/ChallengeInput'
 import { ZwickyBox } from './components/ZwickyBox'
 import { IdeasList } from './components/IdeasList'
 import { ThemeToggle } from './components/ThemeToggle'
-import { generateAttributes as generateAttributesAPI, generateIdea as generateIdeaAPI, generateIdeaDetails as generateIdeaDetailsAPI, generateIdeaVariation as generateIdeaVariationAPI } from './services/anthropicService'
+import { generateAttributes as generateAttributesAPI, generateIdea as generateIdeaAPI, generateIdeaDetails as generateIdeaDetailsAPI, generateIdeaVariation as generateIdeaVariationAPI } from './services/aiGatewayService'
 import { exportZwickyBox, importZwickyBox } from './utils/zwickyBoxExport'
 import './App.css'
 
