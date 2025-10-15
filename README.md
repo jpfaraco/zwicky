@@ -1,6 +1,6 @@
 # Zwicky Box Idea Generator
 
-An AI-powered web application that helps you generate innovative ideas using the Zwicky Box (morphological analysis) method combined with OpenAI's GPT-4o Mini via Vercel AI Gateway.
+An AI-powered web application that helps you generate innovative ideas using the Zwicky Box (morphological analysis) method.
 
 ## Features
 
@@ -41,22 +41,26 @@ An AI-powered web application that helps you generate innovative ideas using the
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/jpfaraco/zwicky.git
 cd zwicky
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up your environment variables:
+
 ```bash
 cp .env.example .env
 ```
 
 4. Edit `.env` and add your Vercel AI Gateway API key:
+
 ```
 VITE_AI_GATEWAY_API_KEY=your_actual_api_key_here
 ```
@@ -64,21 +68,25 @@ VITE_AI_GATEWAY_API_KEY=your_actual_api_key_here
 ### Running the Application
 
 Start the development server:
+
 ```bash
 npm run dev
 ```
+
 This starts the Vite dev server at `http://localhost:5173`
 
-The application calls Vercel AI Gateway directly from the frontend using your API key.
+In development, the application calls Vercel AI Gateway directly from the browser using your API key. In production, it uses a serverless API route to avoid CORS issues.
 
 ### Building for Production
 
 Build the application:
+
 ```bash
 npm run build
 ```
 
 Preview the production build:
+
 ```bash
 npm run preview
 ```
@@ -100,6 +108,7 @@ npm run preview
 7. **Review Ideas**: All generated ideas appear in the "Generated Ideas" section below, showing the idea title, description, and which components were used (if applicable).
 
 8. **Expand Ideas**: Click the "Expand" button on any idea to generate full execution details including:
+
    - Step-by-step execution plan (3-5 steps)
    - Quick test methodology (hypothesis, experiment, success metrics)
    - Risks & compliance considerations with mitigations
@@ -114,6 +123,7 @@ npm run preview
 ## Features in Detail
 
 ### Attribute Management
+
 - **AI Generation**: Automatically generate relevant attributes with guiding questions from your challenge description
 - **Manual Addition**: Add custom attributes manually
 - **Edit Names**: Click on attribute names to edit them inline
@@ -121,6 +131,7 @@ npm run preview
 - **Delete**: Hover over an attribute and click the X button to remove it
 
 ### Item Management
+
 - **Add Items**: Populate each attribute with specific options
 - **Quick Entry**: Press Enter while editing an item to create a new item below
 - **Edit Items**: Double-click items to edit them inline
@@ -129,6 +140,7 @@ npm run preview
 - **Select**: Click items to select them for idea generation (only one per column)
 
 ### Idea Generation & Management
+
 - **Selective Mode**: If any items are selected, ideas will only use those selections
 - **Random Mode**: If no items are selected, the system randomly chooses one from each attribute
 - **Progressive Generation**: Initial ideas are concise summaries (2-4 sentences) to save time and API tokens
@@ -140,6 +152,7 @@ npm run preview
 - **Components Display**: See which attribute items were used for each idea (hidden for variations that don't use components)
 
 ### Import/Export
+
 - **Export**: Download your Zwicky Box as a JSON file (challenge, attributes, questions, and items)
 - **Import**: Load a previously saved JSON file to restore your work
 - **Validation**: Import automatically validates file structure and shows errors for invalid files
@@ -148,6 +161,7 @@ npm run preview
 ## API Configuration
 
 The application uses Vercel AI Gateway with OpenAI GPT-4o Mini for AI-powered features:
+
 - **Model**: `gpt-4o-mini`
 - **Gateway**: Vercel AI Gateway (`https://ai-gateway.vercel.sh/v1`)
 - **Max Tokens**:
@@ -162,17 +176,22 @@ Vercel AI Gateway provides centralized management, monitoring, and cost tracking
 
 ## Deployment
 
-The app is deployed on Vercel as a static site. The production deployment:
+The app is deployed on Vercel with a serverless API route. The production deployment:
+
 - Serves the static frontend from the build output
-- Calls Vercel AI Gateway directly from the frontend
+- Uses a serverless API route (`/api/ai-gateway`) to proxy AI Gateway requests
 - Automatically uses `VERCEL_OIDC_TOKEN` for authentication (no API key needed in Vercel settings)
 - The OIDC token is automatically injected by Vercel and scoped to your project for enhanced security
 - Includes Vercel Web Analytics for tracking page views and performance metrics
+
+**Why the API route?** Direct browser calls to AI Gateway in production are blocked by CORS. The API route runs server-side, avoiding this issue while maintaining security through OIDC authentication.
 
 ## Project Structure
 
 ```
 zwicky-app/
+├── api/
+│   └── ai-gateway.js        # Serverless API route for production
 ├── src/
 │   ├── components/
 │   │   ├── ui/              # Shadcn/ui components
@@ -185,7 +204,7 @@ zwicky-app/
 │   │   ├── IdeasList.jsx         # Generated ideas display
 │   │   └── ThemeToggle.jsx       # Dark/light mode toggle
 │   ├── services/
-│   │   └── aiGatewayService.js   # AI Gateway API service
+│   │   └── aiGatewayService.js   # AI Gateway service (dev: direct, prod: API route)
 │   ├── utils/
 │   │   └── zwickyBoxExport.js    # Import/Export utilities
 │   ├── lib/
@@ -216,6 +235,7 @@ zwicky-app/
 ## Troubleshooting
 
 ### API Key Not Working
+
 - Make sure your `.env` file is in the `zwicky-app` directory
 - Verify the API key starts with `vck_` (Vercel AI Gateway key format)
 - Verify the API key is correctly copied (no extra spaces)
@@ -223,16 +243,20 @@ zwicky-app/
 - Check the browser console for any authorization errors
 
 ### Network Errors
+
 - Verify your internet connection
 - Check the browser console for any CORS or network errors
-- Ensure the AI Gateway endpoint is accessible: `https://ai-gateway.vercel.sh/v1/chat/completions`
+- **In development**: Ensure the AI Gateway endpoint is accessible: `https://ai-gateway.vercel.sh/v1/chat/completions`
+- **In production**: If you get CORS errors, ensure the `/api/ai-gateway` route is deployed and the OIDC token is available
 
 ### Tailwind Styles Not Applying
+
 - Clear your browser cache
 - Restart the development server
 - Check that `tailwind.config.js` and `postcss.config.js` are in the project root
 
 ### Build Errors
+
 - Delete `node_modules` and `package-lock.json`
 - Run `npm install` again
 - Make sure you're using Node.js v20.19+ or v22.12+ (required by Vite 7)
@@ -240,6 +264,7 @@ zwicky-app/
 ## Future Enhancements
 
 See the PRD document for potential future features including:
+
 - Data persistence and user accounts
 - Export functionality (PDF, CSV)
 - Collaborative editing
@@ -254,6 +279,7 @@ MIT
 ## Credits
 
 Built with:
+
 - [React](https://react.dev/)
 - [Vite](https://vite.dev/)
 - [Vercel AI Gateway](https://vercel.com/docs/ai-gateway)
