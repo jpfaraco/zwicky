@@ -1,15 +1,32 @@
-// Get API key from environment (VITE_AI_GATEWAY_API_KEY for local dev, VERCEL_OIDC_TOKEN for production)
-const getApiKey = () => {
-  return import.meta.env.VITE_AI_GATEWAY_API_KEY || import.meta.env.VERCEL_OIDC_TOKEN;
+// Use API route in production, direct call in development
+const getApiConfig = () => {
+  const isDev = import.meta.env.DEV;
+
+  if (isDev) {
+    // Local development - call AI Gateway directly
+    return {
+      url: 'https://ai-gateway.vercel.sh/v1/chat/completions',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_AI_GATEWAY_API_KEY}`,
+      }
+    };
+  } else {
+    // Production - use API route to avoid CORS
+    return {
+      url: '/api/ai-gateway',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    };
+  }
 };
 
 export async function generateAttributes(challenge) {
-  const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
+  const config = getApiConfig();
+  const response = await fetch(config.url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${getApiKey()}`,
-    },
+    headers: config.headers,
     body: JSON.stringify({
       model: "gpt-4o-mini",
       max_tokens: 1500,
@@ -68,12 +85,10 @@ Generate the attributes with questions as a JSON array:`,
 export async function generateIdea(challenge, selectedComponents) {
   const componentsText = selectedComponents.map((comp) => `${comp.attribute}: ${comp.item}`).join("\n");
 
-  const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
+  const config = getApiConfig();
+  const response = await fetch(config.url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${getApiKey()}`,
-    },
+    headers: config.headers,
     body: JSON.stringify({
       model: "gpt-4o-mini",
       max_tokens: 300,
@@ -114,12 +129,10 @@ Output (in the same language as the input, and output ONLY the content in the fo
 export async function generateIdeaDetails(challenge, selectedComponents, ideaSummary) {
   const componentsText = selectedComponents.map((comp) => `${comp.attribute}: ${comp.item}`).join("\n");
 
-  const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
+  const config = getApiConfig();
+  const response = await fetch(config.url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${getApiKey()}`,
-    },
+    headers: config.headers,
     body: JSON.stringify({
       model: "gpt-4o-mini",
       max_tokens: 1200,
@@ -171,12 +184,10 @@ Output (in the same language as the input, and output ONLY the content in the fo
 }
 
 export async function generateIdeaVariation(challenge, originalIdea) {
-  const response = await fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
+  const config = getApiConfig();
+  const response = await fetch(config.url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${getApiKey()}`,
-    },
+    headers: config.headers,
     body: JSON.stringify({
       model: "gpt-4o-mini",
       max_tokens: 350,
